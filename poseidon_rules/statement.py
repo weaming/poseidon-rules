@@ -10,6 +10,7 @@ DeepStatement (variant 1) (type dict):
     * statements (type List[Statement])
 
 DeepStatement (variant 2) (type List[Statement])
+    (set the default relation as `and`)
 
 Rule:
     * name (type str)
@@ -111,7 +112,11 @@ class DeepStatement(Logic):
         self.definition = definition
 
     def __bool__(self):
-        return bool(self.evaluate())
+        ev = self.evaluate()
+        if callable(ev):
+            # if, must can be provided as a closure function without any paramter
+            ev = ev()
+        return bool(ev)
 
     def __repr__(self):
         return "<DeepStatement: {}>".format(self.definition)
@@ -132,13 +137,23 @@ class DeepStatement(Logic):
             return StatementList(self.definition)
         # Boolean
         else:
-            # "if" not provided
+            # when "if" not provided, default check the "must" part
             if self.definition is None:
                 return True
             return self.definition
 
     def reason(self):
         return self.evaluate()
+
+
+def silent_if(fn, condition):
+    try:
+        return fn()
+    except Exception:
+        if condition:
+            return None
+        else:
+            raise
 
 
 class ConditionalStatement(Logic):
@@ -189,11 +204,11 @@ class ConditionalStatement(Logic):
         return bool(self.if_)
 
     def is_must_valid(self):
-        return bool(self.must)
+        return silent_if(lambda: bool(self.must), not self.is_satisfied())
 
     def is_else_must_valid(self):
         if self.else_must is not None:
-            return bool(self.else_must)
+            return silent_if(lambda: bool(self.else_must), not self.is_satisfied())
         return True
 
     def __bool__(self):
@@ -253,4 +268,3 @@ def validate_rule_dict(rule_dict):
     if not rule:
         last_name, _ = get_reason_stack(rule)
         raise RuleFail(last_name)
-

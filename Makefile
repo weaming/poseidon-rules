@@ -1,2 +1,2 @@
 test:
-	pytest ./poseidon_rules/*.py
+	pytest -sv ./poseidon_rules/*.py
