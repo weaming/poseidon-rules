@@ -64,15 +64,28 @@ def test_boolean_as_statement_list_item():
     assert bool(rule) is True
 
 
-def test_conditional_must():
+def test_conditional_must1():
     data = {"a": {"b": {"c": 4}}, "b": {"b": {"c": 3}}}
     x = g(data, "a.b.c")
     rule_dict = {
         "name": "example three",
         "if": [x == 3],  # false
-        "must": lambda: [
-            data['c']  # KeyError if evaluated
-        ],
+        "must": lambda: data['c'],  # KeyError if evaluated
+    }
+    rule = ConditionalStatement.from_dict(rule_dict)
+    print(rule)
+    assert bool(rule) is True
+
+
+def test_conditional_must2():
+    data = {"a": {"b": {"c": 4}}, "b": {"b": {"c": 3}}}
+    x = g(data, "a.b.c")
+    rule_dict = {
+        "name": "example four",
+        "if": [x == 4],  # false
+        "must": lambda: data['a'],  # No KeyError if evaluated
+        "else_name": "example four (else)",
+        "else_must": lambda: data['c'],  # KeyError if evaluated
     }
     rule = ConditionalStatement.from_dict(rule_dict)
     print(rule)

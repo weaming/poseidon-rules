@@ -114,7 +114,7 @@ class DeepStatement(Logic):
     def __bool__(self):
         ev = self.evaluate()
         if callable(ev):
-            # if, must can be provided as a closure function without any paramter
+            # if, must can be provided as a closure function without any parameter
             ev = ev()
         return bool(ev)
 
@@ -185,7 +185,7 @@ class ConditionalStatement(Logic):
         self.else_must = else_must
 
     def __repr__(self):
-        return '<ConditionalStatement "{}": {}, {}, {} => {}>'.format(
+        return '<ConditionalStatement "{}": {} ? {} : {} => {}>'.format(
             self.real_name(),
             self.is_satisfied(),
             self.is_must_valid(),
@@ -208,7 +208,7 @@ class ConditionalStatement(Logic):
 
     def is_else_must_valid(self):
         if self.else_must is not None:
-            return silent_if(lambda: bool(self.else_must), not self.is_satisfied())
+            return silent_if(lambda: bool(self.else_must), self.is_satisfied())
         return True
 
     def __bool__(self):
