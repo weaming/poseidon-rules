@@ -1,6 +1,7 @@
 from .utils import g
-from .statement import ConditionalStatement
+from .statement import ConditionalStatement, validate_rule_dict
 from .validator import is_date_format
+from .errors import RuleFail
 
 
 def test_dict_as_statement_list_item():
@@ -90,3 +91,21 @@ def test_conditional_must2():
     rule = ConditionalStatement.from_dict(rule_dict)
     print(rule)
     assert bool(rule) is True
+
+
+def test_conditional_must3():
+    data = {"a": {"b": {"c": 4}}, "b": {"b": {"c": 3}}}
+    x = g(data, "a.b.c")
+    rule_dict = {
+        "name": "example five",
+        "if": [x == 4],
+        "must": lambda: g(data, "a.b.c") == 5,  # False
+    }
+    rule = ConditionalStatement.from_dict(rule_dict)
+    print(rule)
+    assert bool(rule) is False
+    try:
+        validate_rule_dict(rule_dict)
+        raise Exception('test fail')
+    except RuleFail as e:
+        assert str(e) == 'example five'

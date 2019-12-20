@@ -242,17 +242,29 @@ class ConditionalStatement(Logic):
             return self.else_must
 
 
+def get_reason_name(reason, last_name):
+    return reason.real_name() if hasattr(reason, 'real_name') else last_name
+
+
 def get_reason_stack(x, last_name=None, stack=None, prt=False):
-    stack = stack or []
+    stack = stack or [x]
     if hasattr(x, 'reason'):
         reason = x.reason()
+        if callable(reason):
+            reason = reason()
+            assert bool(reason) is False
+            for frame in reversed(stack):
+                real_name = get_reason_name(frame, None)
+                if real_name:
+                    return real_name, stack
+
         assert bool(reason) is False
         if prt:
             print(reason)
         stack.append(reason)
         return get_reason_stack(
             reason,
-            last_name=reason.real_name() if hasattr(reason, 'real_name') else last_name,
+            last_name=get_reason_name(reason, last_name),
             stack=stack,
             prt=prt,
         )
